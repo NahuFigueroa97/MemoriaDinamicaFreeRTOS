@@ -81,13 +81,13 @@ void TareaA(void * pvParameters) {
 	TickType_t time = xTaskGetTickCount();
 	TickType_t Periodity = PERIODO;
 	char *data;
-	data = (char *) pvPortMalloc(sizeof(char));
-	configASSERT(data != NULL);
 
 	while (1) {
 
+		data = (char *) pvPortMalloc(sizeof(char));
+		configASSERT(data != NULL);
 		gpioWrite(LED, ON);
-		data = MESSAGE_LED;
+		*data = MESSAGE_LED;
 		xQueueSend(Queue, &data, 0);
 		vTaskDelay(Periodity / 2);
 		gpioWrite(LED, OFF);
@@ -102,11 +102,11 @@ void TareaB(void * pvParameters) {
 	TickType_t TimeDiff;
 	gpioMap_t Button;
 	char *data;
-	data = (char *) pvPortMalloc(sizeof(char));
-	configASSERT(data != NULL);
 
 	while (1) {
 
+		data = (char *) pvPortMalloc(sizeof(char) );
+		configASSERT(data != NULL);
 		xQueueReceive(QueueAux, &Button, portMAX_DELAY);
 		taskENTER_CRITICAL();
 		TimeDiff = get_diff(Button);
@@ -128,6 +128,7 @@ void TareaC(void * pvParameters) {
 		taskENTER_CRITICAL();
 		printf(data);
 		taskEXIT_CRITICAL();
+		vPortFree(data);
 
 	}
 
