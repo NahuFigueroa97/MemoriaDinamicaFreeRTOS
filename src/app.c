@@ -30,12 +30,13 @@ BaseType_t res;
 QueueHandle_t Queue;
 extern QueueHandle_t QueueAux;
 
-void TareaA ( void * pvParameters );
-void TareaB ( void * pvParameters );
-void TareaC ( void * pvParameters );
+void TareaA(void * pvParameters);
+void TareaB(void * pvParameters);
+void TareaC(void * pvParameters);
 
 /*==================[definiciones de datos externos]=========================*/
-DEBUG_PRINT_ENABLE;
+DEBUG_PRINT_ENABLE
+;
 
 int main(void) {
 	/* Inicializar la placa */
@@ -46,21 +47,21 @@ int main(void) {
 	/* inicializo driver de teclas */
 	keys_Init();
 
-    res = xTaskCreate(TareaA, (const char *) "TareaA", configMINIMAL_STACK_SIZE * 2, 0, tskIDLE_PRIORITY + 1, 0);
+	res = xTaskCreate(TareaA, (const char *) "TareaA", configMINIMAL_STACK_SIZE * 2, 0, tskIDLE_PRIORITY + 1, 0);
 
-    configASSERT ( res == pdPASS);
+	configASSERT(res == pdPASS);
 
-    res = xTaskCreate(TareaB, (const char *) "TareaB", configMINIMAL_STACK_SIZE * 2, 0, tskIDLE_PRIORITY + 1, 0);
+	res = xTaskCreate(TareaB, (const char *) "TareaB", configMINIMAL_STACK_SIZE * 2, 0, tskIDLE_PRIORITY + 1, 0);
 
-    configASSERT ( res == pdPASS);
+	configASSERT(res == pdPASS);
 
-    res = xTaskCreate(TareaC, (const char *) "TareaC", configMINIMAL_STACK_SIZE * 2, 0, tskIDLE_PRIORITY + 1, 0);
+	res = xTaskCreate(TareaC, (const char *) "TareaC", configMINIMAL_STACK_SIZE * 2, 0, tskIDLE_PRIORITY + 1, 0);
 
-    configASSERT ( res == pdPASS);
+	configASSERT(res == pdPASS);
 
-    Queue = xQueueCreate(nQueue, sizeof( char *));
+	Queue = xQueueCreate(nQueue, sizeof(char *));
 
-    configASSERT ( Queue != NULL);
+	configASSERT(Queue != NULL);
 
 	/* arranco el scheduler */
 	vTaskStartScheduler();
@@ -75,20 +76,20 @@ int main(void) {
 	return TRUE;
 }
 
-void TareaA ( void * pvParameters ){
+void TareaA(void * pvParameters) {
 
 	TickType_t time = xTaskGetTickCount();
 	TickType_t Periodity = PERIODO;
 	char *data;
-	data = ( char * )pvPortMalloc( sizeof( char ) );
-	configASSERT ( data != NULL);
+	data = (char *) pvPortMalloc(sizeof(char));
+	configASSERT(data != NULL);
 
-	while(1){
+	while (1) {
 
 		gpioWrite(LED, ON);
 		data = MESSAGE_LED;
-        xQueueSend(Queue, &data, 0);
-		vTaskDelay(Periodity/2);
+		xQueueSend(Queue, &data, 0);
+		vTaskDelay(Periodity / 2);
 		gpioWrite(LED, OFF);
 		vTaskDelayUntil(&time, Periodity);
 
@@ -96,22 +97,20 @@ void TareaA ( void * pvParameters ){
 
 }
 
-void TareaB ( void * pvParameters ){
+void TareaB(void * pvParameters) {
 
 	TickType_t TimeDiff;
 	gpioMap_t Button;
 	char *data;
-	data = ( char * )pvPortMalloc( sizeof( char ) );
-	configASSERT ( data != NULL);
+	data = (char *) pvPortMalloc(sizeof(char));
+	configASSERT(data != NULL);
 
-	while(1){
+	while (1) {
 
 		xQueueReceive(QueueAux, &Button, portMAX_DELAY);
 		taskENTER_CRITICAL();
-		data = ( char * )pvPortMalloc( sizeof( char ) );
-		configASSERT ( data != NULL);
 		TimeDiff = get_diff(Button);
-		sprintf(data, MESSAGE_BUTTON_TIME, Button + 1, TimeDiff );
+		sprintf(data, MESSAGE_BUTTON_TIME, Button + 1, TimeDiff);
 		taskEXIT_CRITICAL();
 		xQueueSend(Queue, &data, 0);
 
@@ -119,21 +118,18 @@ void TareaB ( void * pvParameters ){
 
 }
 
-void TareaC ( void * pvParameters ){
+void TareaC(void * pvParameters) {
 
 	char *data;
 
-	while(1){
+	while (1) {
 
-		    xQueueReceive(Queue, &data, portMAX_DELAY );
-			taskENTER_CRITICAL();
-			printf(data);
-			taskEXIT_CRITICAL();
-
-		}
+		xQueueReceive(Queue, &data, portMAX_DELAY);
+		taskENTER_CRITICAL();
+		printf(data);
+		taskEXIT_CRITICAL();
 
 	}
 
-
-
+}
 
